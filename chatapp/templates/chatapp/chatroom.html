@@ -15,9 +15,11 @@
                 <h5 class="display-5 fw-bold">Chats Log</h5>
                 <textarea class="form-control" id="log" rows="12"></textarea><br>
                 <h5 class="col-md-8 fs-4">Enter your chats here</h5>
-                <input class="form-control" id="chatmssg" type="text" size="100" placeholder="Your message goes here..."><br>
-                <input class="form-control" id="mediaUpload" type="file"><br>
-                <input class="btn btn-primary btn-lg" id="submit" type="button" value="Send">
+                <form id="chatForm" enctype="multipart/form-data">
+                    <input class="form-control" id="chatmssg" type="text" size="100" placeholder="Your message goes here..."><br>
+                    <input class="form-control" id="mediaUpload" type="file"><br>
+                    <input class="btn btn-primary btn-lg" id="submit" type="button" value="Send">
+                  </form>
             </div>
         </div>
     </div>
@@ -27,17 +29,22 @@
         const chatSocket = new WebSocket(
             `ws://${window.location.host}/ws/chat/${roomName}/`
         );
-
-        chatSocket.onmessage = function(e) {
+        roomName.addEventListener('click', () => {
+            roomName.innerHTML = roomName.innerHTML;
+        });
+        chatSocket.onmessage = function (e) {
             const data = JSON.parse(e.data);
             if (data.media) {
                 const mediaElement = document.createElement('img');
                 mediaElement.src = data.media;
                 document.querySelector('#log').appendChild(mediaElement);
+              saveMedia(data.media);
             } else {
-                document.querySelector('#log').value += `${data.message}\n`;
+              // Handle regular text messages
+              document.querySelector('#log').value += `${data.message}\n`;
             }
-        };
+          };
+          
 
         chatSocket.onclose = function(e) {
             console.error('Oops! Chat closed.');
@@ -66,6 +73,23 @@
             };
             reader.readAsDataURL(file);
         };
+
+        function saveMedia(media) {
+            const formData = new FormData();
+            formData.append('media', media);
+          
+            // Send the media file to the backend using AJAX
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/path/to/save/media/', true);
+            xhr.onreadystatechange = function () {
+              if (xhr.readyState === 4 && xhr.status === 200) {
+                // File saved successfully
+                console.log('Media file saved.');
+              }
+            };
+            xhr.send(formData);
+          }
+          
     </script>
 </body>
 </html>
