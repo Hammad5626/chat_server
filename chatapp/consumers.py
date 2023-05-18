@@ -1,6 +1,16 @@
 import json
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
+# suicgucygsd
+
+class WebsocketConsumer(wsgi.Consumer):
+    def connect(self):
+        self.room_name = self.scope['url_route']['kwargs']['room_name']
+        async_to_sync(self.channel_layer.group_add)(
+            self.room_name,
+            self.channel_name
+        )
+        self.accept()
 class Consumer(WebsocketConsumer):
     def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
